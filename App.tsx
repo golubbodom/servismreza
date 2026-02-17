@@ -441,6 +441,9 @@ useEffect(() => {
     tags: data.tags,
     working_hours: data.workingHours || null,
     description: data.description || null,
+    lat: data.lat ?? null,
+    lng: data.lng ?? null,
+
     status: "pending",
     dup_confirmed: force,
   });

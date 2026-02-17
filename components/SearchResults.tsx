@@ -383,6 +383,8 @@ const areaLabel = (f: any) => {
           ) : (
             <div key={`near-grid-${nearAnimKey}`} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 page-fade">
               {nearPageItems.map((f) => {
+                console.log("MAP DEBUG", f.name, (f as any).lat, (f as any).lng, (f as any).latitude, (f as any).longitude);
+
                 const fav = canShowStars ? isFavorite(f.id) : false;
 
                 return (

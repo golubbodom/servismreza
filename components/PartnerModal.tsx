@@ -10,6 +10,8 @@ type PartnerApplication = {
   tags: string[];
   workingHours?: string;
   description?: string;
+  lat?: number;
+  lng?: number;
 };
 
 export type SubmitResult =
