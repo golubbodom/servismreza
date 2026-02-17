@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="sr" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SERVIS MREŽA | Pregled Lokalnih Majstora u Srbiji</title>
+    <meta name="description" content="SERVIS MREŽA je informativna platforma za pronalaženje lokalnih majstora. Električari, vodoinstalateri, moleri i drugi izvođači radova na jednom mestu." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Servis Mreža – Pronađi majstore u svom gradu" />
+<meta property="og:description" content="Brzo • Lokalno • Transparentno. Pronađi proverene majstore i firme u svom gradu." />
+<meta property="og:image" content="https://servismreza.com/og-image.jpg" />
+<meta property="og:url" content="https://servismreza.com" />
+<meta property="og:image" content="/og-image.jpg" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Servis Mreža – Pronađi majstore u svom gradu" />
+<meta name="twitter:description" content="Brzo • Lokalno • Transparentno." />
+<meta name="twitter:image" content="https://servismreza.com/og-image.jpg" />
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+      
+      /* Reveal Animation Styles */
+      .reveal {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 400ms ease-out, transform 400ms ease-out;
+        will-change: opacity, transform;
+      }
+      .reveal-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Staggered children reveal */
+      .reveal-group > * {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 400ms ease-out, transform 400ms ease-out;
+      }
+      .reveal-visible.reveal-group > * {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .reveal-visible.reveal-group > *:nth-child(1) { transition-delay: 0.1s; }
+      .reveal-visible.reveal-group > *:nth-child(2) { transition-delay: 0.2s; }
+      .reveal-visible.reveal-group > *:nth-child(3) { transition-delay: 0.3s; }
+      .reveal-visible.reveal-group > *:nth-child(4) { transition-delay: 0.4s; }
+      .reveal-visible.reveal-group > *:nth-child(5) { transition-delay: 0.5s; }
+      .reveal-visible.reveal-group > *:nth-child(6) { transition-delay: 0.6s; }
+
+      /* Ripple Animation */
+      @keyframes ripple-effect {
+        0% { transform: scale(1); opacity: 0.4; }
+        100% { transform: scale(100); opacity: 0; }
+      }
+      .animate-ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.6);
+        width: 4px;
+        height: 4px;
+        pointer-events: none;
+        animation: ripple-effect 0.6s ease-out forwards;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .reveal, .reveal-group > *, .animate-shake, .animate-ripple {
+          transition: none !important;
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
