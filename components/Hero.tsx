@@ -164,9 +164,7 @@ const pickCity = (c: string) => {
           <div className="w-16 h-1 bg-brand-orange mx-auto mb-8 rounded-full"></div>
 
           <p className="text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-            ServisMreza pomaže da brzo pronađete lokalne majstore i servise u Srbiji — vodoinstalatere, električare,
-stolare, molere, krovopokrivače i još mnogo usluga. Pretražite po kategoriji, unesite opštinu ili koristite
-lokaciju (do 25 km).<br className="hidden md:block" /> Brzo i transparentno.
+            Pretražite usluge, unesite opštinu ili koristite lokaciju.<br className="hidden md:block" /> Brzo i transparentno.
           </p>
           
           {/* Search Bar Component */}
