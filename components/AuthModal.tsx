@@ -255,7 +255,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <ul className="text-sm font-medium list-disc pl-5 space-y-1">
                     <li>Čuvanje omiljenih firmi (favoriti)</li>
                     <li>Istorija pretrage</li>
-                    <li>Ocene i komentari</li>
+                    <li>Čuvanje omiljenih kategorija</li>
                   </ul>
                 </div>
 
