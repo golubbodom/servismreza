@@ -155,16 +155,18 @@ const pickCity = (c: string) => {
         <div className="max-w-4xl mx-auto text-center reveal">
           
           <span className="inline-block px-6 py-2 mb-10 text-[13px] md:text-s font-black tracking-[0.3em] text-brand-blue uppercase bg-white rounded-full border border-blue-50 shadow-sm">
-            NAJVEĆA MREŽA LOKALNIH USLUGA
+            MAJSTORI I SERVISI U SRBIJI
           </span>
           <h1 className="text-5xl lg:text-7xl font-black text-brand-navy leading-[0.95] mb-4 tracking-tighter">
-            Pregled firmi i usluga za kuću i poslovni prostor
+            Pronađite majstore i servise u vašoj blizini
           </h1>
           
           <div className="w-16 h-1 bg-brand-orange mx-auto mb-8 rounded-full"></div>
 
           <p className="text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-            Direktna veza sa lokalnim profesionalcima i firmama u Srbiji. <br className="hidden md:block" /> Brzo i transparentno.
+            ServisMreza pomaže da brzo pronađete lokalne majstore i servise u Srbiji — vodoinstalatere, električare,
+stolare, molere, krovopokrivače i još mnogo usluga. Pretražite po kategoriji, unesite opštinu ili koristite
+lokaciju (do 25 km).<br className="hidden md:block" /> Brzo i transparentno.
           </p>
           
           {/* Search Bar Component */}
@@ -260,7 +262,7 @@ const pickCity = (c: string) => {
           setCityOpen(false);
         }
       }}
-      placeholder="Opština (opciono)"
+      placeholder="Grad ili opština (opciono)"
       className="w-full py-4 px-5 text-base font-bold text-brand-navy bg-white focus:outline-none placeholder:text-slate-300"
     />
 
