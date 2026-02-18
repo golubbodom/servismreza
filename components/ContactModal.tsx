@@ -42,10 +42,10 @@ export default function ContactModal({ open, onClose }: Props) {
           </div>
 
           <a
-            href="mailto:info@servismreza.com"
+            href="mailto:servismrezars@gmail.com"
             className="mt-2 inline-block text-brand-orange font-black text-lg hover:underline"
           >
-            info@servismreza.com
+            servismrezars@gmail.com
           </a>
 
           <p className="mt-4 text-sm text-slate-600 font-semibold">
