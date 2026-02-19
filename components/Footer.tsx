@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
               </p>
             <div className="flex items-center gap-4 mt-4">
               <a
-                href="#"
+                href="https://www.instagram.com/servismrezars/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-500 hover:text-brand-orange transition transform hover:scale-110"

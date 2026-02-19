@@ -52,7 +52,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
 
   const subtitle = useMemo(() => {
     if (view === "login") {
-      return "Registracijom dobijaš: favorite, istoriju pretrage i ocenjivanje firmi.";
+      return "Registracijom dobijaš: favorite, istoriju pretrage i sacuvane kategorije.";
     }
     if (view === "register") {
       return "Napravi nalog za favorite, istoriju pretrage i ocenjivanje firmi.";
