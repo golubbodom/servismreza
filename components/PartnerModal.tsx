@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import imageCompression from "browser-image-compression";
 
 type PartnerApplication = {
   companyName: string;
@@ -21,8 +22,7 @@ export type SubmitResult =
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit?: (data: PartnerApplication, opts?: { force?: boolean }) => Promise<SubmitResult>;
-};
+onSubmit?: (data: PartnerApplication, photos: File[], opts?: { force?: boolean }) => Promise<SubmitResult>;};
 
 const normalizeTag = (s: string) =>
   s
@@ -62,6 +62,11 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const MAX_PHOTOS = 5;
+const [photos, setPhotos] = useState<File[]>([]);
+const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+const [photoErr, setPhotoErr] = useState<string | null>(null);
+
   // confirm flow
   const [needsConfirm, setNeedsConfirm] = useState(false);
   const [lastPayload, setLastPayload] = useState<PartnerApplication | null>(null);
@@ -95,7 +100,10 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
     setWorkingHours("");
     setDescription("");
     setMunicipality("");
-  }, [open]);
+    setPhotos([]);
+    setPhotoPreviews([]);
+    setPhotoErr(null);
+      }, [open]);
 
   const canAddMoreTags = tags.length < 5;
 
@@ -153,6 +161,55 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
     description: description.trim() || undefined,
   });
 
+  const handlePickPhotos = async (filesList: FileList | null) => {
+  if (!filesList) return;
+
+  setPhotoErr(null);
+
+  const incoming = Array.from(filesList);
+  const spaceLeft = MAX_PHOTOS - photos.length;
+  const toTake = incoming.slice(0, Math.max(0, spaceLeft));
+
+  if (toTake.length === 0) {
+    setPhotoErr(`Možeš maksimum ${MAX_PHOTOS} slika.`);
+    return;
+  }
+
+  try {
+    const compressed: File[] = [];
+
+    for (const f of toTake) {
+      if (!f.type.startsWith("image/")) continue;
+
+      const out = await imageCompression(f, {
+        maxSizeMB: 0.45,         // ~450KB
+        maxWidthOrHeight: 1600,  // dovoljno za galeriju
+        useWebWorker: true,
+        initialQuality: 0.8,
+      });
+
+      const blob = out as Blob;
+
+const asFile =
+  out instanceof File
+    ? out
+    : new File([blob], f.name, { type: blob.type || f.type });
+
+      compressed.push(asFile);
+    }
+
+    const next = [...photos, ...compressed].slice(0, MAX_PHOTOS);
+    setPhotos(next);
+
+    // preview (očisti stare)
+    photoPreviews.forEach((u) => URL.revokeObjectURL(u));
+    setPhotoPreviews(next.map((f) => URL.createObjectURL(f)));
+  } catch (e) {
+    console.error(e);
+    setPhotoErr("Ne mogu da obradim slike. Probaj druge ili manji broj.");
+  }
+};
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
@@ -168,8 +225,7 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
 
     setIsSubmitting(true);
     try {
-      const res = await onSubmit(payload);
-
+      const res = await onSubmit(payload, photos);
       if (!isSubmitError(res)) {
         setSuccess(true);
         return;
@@ -210,7 +266,7 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
     setSubmitMsg(null);
 
     try {
-      const res = await onSubmit(lastPayload, { force: true });
+      const res = await onSubmit(lastPayload, photos, { force: true });
 
       if (!isSubmitError(res)) {
         setSuccess(true);
@@ -492,6 +548,67 @@ export default function PartnerModal({ open, onClose, onSubmit }: Props) {
                     )}
                   </div>
                 </div>
+
+                {/* GALERIJA (opciono) */}
+<div className="mt-2">
+  <div className="flex items-end justify-between gap-3">
+    <div>
+      <label className="block text-sm font-black text-brand-navy">
+        Galerija (opciono, max 5)
+      </label>
+      <p className="mt-1 text-xs font-semibold text-slate-500">
+        Slike se automatski kompresuju pre slanja.
+      </p>
+    </div>
+    <div className="text-xs font-black text-slate-500">{photos.length}/5</div>
+  </div>
+
+  <input
+    id="partner-photos"
+    type="file"
+    accept="image/*"
+    multiple
+    className="hidden"
+    onChange={(e) => handlePickPhotos(e.target.files)}
+    disabled={isSubmitting}
+  />
+
+  <label
+    htmlFor="partner-photos"
+    className="mt-2 w-full inline-flex items-center justify-center rounded-xl bg-slate-100 px-4 py-3 font-black text-brand-navy hover:bg-slate-200 active:scale-95 transition cursor-pointer"
+  >
+    Dodaj slike
+  </label>
+
+  {photoErr && (
+    <div className="mt-2 rounded-xl bg-red-50 border border-red-200 p-3 text-sm font-bold text-red-700">
+      {photoErr}
+    </div>
+  )}
+
+  {photoPreviews.length > 0 && (
+    <div className="mt-3 grid grid-cols-3 gap-2">
+      {photoPreviews.map((src, idx) => (
+        <div key={src} className="relative overflow-hidden rounded-xl border bg-slate-50">
+          <img src={src} alt={`preview-${idx}`} className="h-24 w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => {
+              URL.revokeObjectURL(photoPreviews[idx]);
+              setPhotos(photos.filter((_, i) => i !== idx));
+              setPhotoPreviews(photoPreviews.filter((_, i) => i !== idx));
+            }}
+            disabled={isSubmitting}
+            className="absolute top-1 right-1 h-7 w-7 rounded-full bg-white/90 border text-sm font-black hover:bg-white disabled:opacity-60"
+            title="Ukloni"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
                 <div className="pt-2">
                   <button

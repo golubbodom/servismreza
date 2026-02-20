@@ -227,7 +227,7 @@ useEffect(() => {
   const loadFirms = async () => {
     const { data, error } = await supabase
       .from("firms")
-      .select("id, name, city, municipality, address, phone, email, services, working_hours, description, created_at, lat, lng")
+      .select("id, name, city, municipality, address, phone, email, services, working_hours, description, created_at, lat, lng, source_application_id")     
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -249,6 +249,8 @@ useEffect(() => {
       description: row.description ?? undefined,
       lat: (row as any).lat ?? null,
       lng: (row as any).lng ?? null,
+      sourceApplicationId: row.source_application_id ?? null,
+      partnerApplicationId: row.partner_application_id ?? null,
     }));
 
     setFirms(mapped);
@@ -293,6 +295,48 @@ useEffect(() => {
 
 
   const userEmail = session?.user?.email ?? null;
+  // ====== PARTNER PHOTOS UPLOAD (max 5) ======
+const BUCKET = "firm-images"; // <-- ovde upiši TAČNO ime bucket-a
+
+const uploadPartnerPhotos = async (applicationId: string, photos: File[]) => {
+  if (!photos || photos.length === 0) return;
+
+  const take = photos.slice(0, 5);
+  const uploaded: { path: string; sort: number }[] = [];
+
+  for (let i = 0; i < take.length; i++) {
+    const file = take[i];
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const path = `partner_applications/${applicationId}/${fileName}`;
+
+    const { error: upErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
+
+    if (upErr) {
+      console.error("Storage upload error:", upErr);
+      continue; // ne rušimo celu prijavu
+    }
+
+    uploaded.push({ path, sort: i });
+  }
+
+  if (uploaded.length === 0) return;
+
+  const { error: dbErr } = await supabase
+    .from("partner_application_photos")
+    .insert(
+      uploaded.map((x) => ({
+        application_id: applicationId,
+        path: x.path,
+        sort: x.sort,
+      }))
+    );
+
+  if (dbErr) console.error("DB insert partner_application_photos error:", dbErr);
+};
 
   return (
     <div className="min-h-screen bg-transparent relative">
@@ -388,78 +432,87 @@ useEffect(() => {
             </div>
 )}
 
-        <PartnerModal
-          open={partnerOpen}
-          onClose={closePartner}
-          onSubmit={async (data, opts) => {
-  const phoneNorm = normalizePhone(data.phone);
-  const cityNorm = normalizeCity(data.city);
-  const addressNorm = normalizeAddress(data.address);
+<PartnerModal
+  open={partnerOpen}
+  onClose={closePartner}
+  onSubmit={async (data, photos, opts) => {
+    const phoneNorm = normalizePhone(data.phone);
+    const cityNorm = normalizeCity(data.city);
+    const addressNorm = normalizeAddress(data.address);
 
-  const force = !!opts?.force;
+    const force = !!opts?.force;
 
-  // ✅ DUP CHECK (ADRESA + TELEFON) - sve preko RPC (server-side)
-  if (!force) {
-    const { data: dupRows, error: dupErr } = await supabase.rpc("check_partner_duplicate", {
-      p_city_norm: cityNorm,
-      p_address_norm: addressNorm,
-      p_phone_norm: phoneNorm,
-    });
+    // DUP CHECK
+    if (!force) {
+      const { data: dupRows, error: dupErr } = await supabase.rpc("check_partner_duplicate", {
+        p_city_norm: cityNorm,
+        p_address_norm: addressNorm,
+        p_phone_norm: phoneNorm,
+      });
 
-    if (dupErr) {
-      console.error("Dup RPC error:", dupErr);
-      return {
-        ok: false,
-        reason: "error" as const,
-        message: "Ne mogu da proverim duplikate trenutno.",
-      };
+      if (dupErr) {
+        console.error("Dup RPC error:", dupErr);
+        return { ok: false, reason: "error" as const, message: "Ne mogu da proverim duplikate trenutno." };
+      }
+
+      if (dupRows && dupRows.length > 0) {
+        const d = dupRows[0];
+        const why = d.dup_type === "phone" ? "sa istim brojem telefona" : "na ovoj adresi";
+
+        return {
+          ok: false,
+          reason: "confirm" as const,
+          message: `Deluje da već postoji firma ${why} (npr. "${d.company_name}"). Ako je ovo druga firma, klikni "Pošalji ipak".`,
+        };
+      }
     }
 
-    if (dupRows && dupRows.length > 0) {
-      const d = dupRows[0];
-      const why = d.dup_type === "phone" ? "sa istim brojem telefona" : "na ovoj adresi";
+    // ID pravimo mi
+    const applicationId =
+      (globalThis.crypto && "randomUUID" in globalThis.crypto)
+        ? globalThis.crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
 
-      return {
-        ok: false,
-        reason: "confirm" as const,
-        message: `Deluje da već postoji firma ${why} (npr. "${d.company_name}"). Ako je ovo druga firma, klikni "Pošalji ipak".`,
-      };
+    // INSERT
+    const { error: insErr } = await supabase
+      .from("partner_applications")
+      .insert({
+        id: applicationId,
+        company_name: data.companyName,
+        city: data.city,
+        city_norm: cityNorm,
+        municipality: data.municipality,
+        address: data.address,
+        address_norm: addressNorm,
+        phone: data.phone,
+        phone_norm: phoneNorm,
+        email: data.email || null,
+        tags: data.tags,
+        working_hours: data.workingHours || null,
+        description: data.description || null,
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
+        status: "pending",
+        dup_confirmed: force,
+      });
+
+    if (insErr) {
+      console.error("Insert error:", insErr);
+      return { ok: false, reason: "error" as const, message: "Došlo je do greške pri slanju prijave." };
     }
-  }
 
-  // ✅ INSERT
-  const { error } = await supabase.from("partner_applications").insert({
-    company_name: data.companyName,
-    city: data.city,
-    city_norm: cityNorm,
-    municipality: data.municipality,
-    address: data.address,
-    address_norm: addressNorm,
-    phone: data.phone,
-    phone_norm: phoneNorm,
-    email: data.email || null,
-    tags: data.tags,
-    working_hours: data.workingHours || null,
-    description: data.description || null,
-    lat: data.lat ?? null,
-    lng: data.lng ?? null,
+    // UPLOAD (ne ruši prijavu)
+    try {
+      await uploadPartnerPhotos(applicationId, photos || []);
+    } catch (e) {
+      console.error("uploadPartnerPhotos exception:", e);
+    }
 
-    status: "pending",
-    dup_confirmed: force,
-  });
+    return { ok: true as const };
+  }}
+/>
 
-  if (error) {
-    console.error("Insert error:", error);
-    return {
-      ok: false,
-      reason: "error" as const,
-      message: "Došlo je do greške pri slanju prijave.",
-    };
-  }
 
-  return { ok: true as const };
-}}
-        />
       <ChangePasswordModal
          open={changePassOpen}
          onClose={() => setChangePassOpen(false)}

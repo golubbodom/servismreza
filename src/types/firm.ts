@@ -6,6 +6,8 @@ export type Firm = {
   phone: string;
   email?: string | null;
   
+  sourceApplicationId?: string | null;
+
   distanceKm: number;
   services: string[];
 

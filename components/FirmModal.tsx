@@ -1,5 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { Firm } from "../src/types/firm";
+import GalleryModal from "./GalleryModal";
+import { supabase } from "../src/supabaseClient";
+
+const FIRM_GALLERY: Record<string, string[]> = {
+  // VAŽNO: key mora da bude identičan firm.name
+  "STOLARIJA OBRADOVIC": [
+    "/gallery/obradovicslika1.png",
+    "/gallery/obradovicslika2.png",
+    "/gallery/obradovicslika3.png",
+    "/gallery/obradovicslika 4.png",
+    "/gallery/obradovicslika5.png",
+  ],
+};
 
 type Props = {
   firm: Firm | null;
@@ -13,6 +26,16 @@ const mapsHref = (address: string, city: string) =>
 
 export default function FirmModal({ firm, onClose }: Props) {
   const [copied, setCopied] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  
+
+  const images = useMemo(() => {
+  const key = (firm?.name ?? "").trim();
+  const local = FIRM_GALLERY[key] || [];
+  return galleryUrls.length > 0 ? galleryUrls : local;
+}, [firm, galleryUrls]);
 
   // ESC zatvara modal
   useEffect(() => {
@@ -30,6 +53,54 @@ export default function FirmModal({ firm, onClose }: Props) {
   useEffect(() => {
     setCopied(false);
   }, [firm]);
+
+    useEffect(() => {
+    setCopied(false);
+    setIsGalleryOpen(false);
+  }, [firm]);
+
+useEffect(() => {
+  const run = async () => {
+    if (!firm) return;
+
+ const appId =
+  (firm as any).source_application_id ||
+  (firm as any).sourceApplicationId ||
+  (firm as any).partner_application_id ||
+  (firm as any).partnerApplicationId ||
+  null;
+  
+    if (!appId) {
+      setGalleryUrls([]);
+      return;
+    }
+
+    const folder = `partner_applications/${appId}`;
+
+    const { data: files, error } = await supabase.storage
+      .from("firm-images")
+      .list(folder, { limit: 50, sortBy: { column: "name", order: "asc" } });
+
+    if (error) {
+      console.error("gallery list error:", error);
+      setGalleryUrls([]);
+      return;
+    }
+
+    const urls =
+      (files ?? [])
+        .filter((f) => f.name && !f.name.endsWith("/"))
+        .map((f) => {
+          const path = `${folder}/${f.name}`;
+          const { data } = supabase.storage.from("firm-images").getPublicUrl(path);
+          return data.publicUrl;
+        });
+
+    setGalleryUrls(urls);
+  };
+
+  run();
+}, [firm]);
 
   if (!firm) return null;
 
@@ -160,6 +231,14 @@ export default function FirmModal({ firm, onClose }: Props) {
           )}
 
           <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setIsGalleryOpen(true)}
+              disabled={images.length === 0}
+              className="mb-3 w-full inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 font-black text-brand-navy hover:bg-slate-50 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Galerija {images.length ? `(${images.length})` : ""}
+            </button>
             {isMobile ? (
               <a
                 href={`tel:${firm.phone.replace(/\s/g, "")}`}
@@ -195,6 +274,13 @@ export default function FirmModal({ firm, onClose }: Props) {
             )}
           </div>
         </div>
+              {isGalleryOpen && (
+        <GalleryModal
+          title={`Galerija – ${firm.name}`}
+          images={images}
+          onClose={() => setIsGalleryOpen(false)}
+        />
+      )}
       </div>
     </div>
   );
