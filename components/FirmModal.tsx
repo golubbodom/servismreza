@@ -5,7 +5,7 @@ import { supabase } from "../src/supabaseClient";
 
 const FIRM_GALLERY: Record<string, string[]> = {
   // VAŽNO: key mora da bude identičan firm.name
-  "STOLARIJA OBRADOVIĆ": [
+  "stolarija obradovic": [
     "/gallery/obradovicslika1.png",
     "/gallery/obradovicslika2.png",
     "/gallery/obradovicslika3.png",
@@ -30,6 +30,12 @@ export default function FirmModal({ firm, onClose }: Props) {
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   
+  const norm = (s: string) =>
+  (s || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "");
 
   const images = useMemo(() => {
   const key = norm(firm?.name ?? "");
@@ -37,12 +43,7 @@ export default function FirmModal({ firm, onClose }: Props) {
   return galleryUrls.length > 0 ? galleryUrls : local;
 }, [firm, galleryUrls]);
 
-const norm = (s: string) =>
-  (s || "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "");
+
 
   // ESC zatvara modal
   useEffect(() => {
