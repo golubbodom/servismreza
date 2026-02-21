@@ -5,7 +5,7 @@ import { supabase } from "../src/supabaseClient";
 
 const FIRM_GALLERY: Record<string, string[]> = {
   // VAŽNO: key mora da bude identičan firm.name
-  "STOLARIJA OBRADOVIC": [
+  "STOLARIJA OBRADOVIĆ": [
     "/gallery/obradovicslika1.png",
     "/gallery/obradovicslika2.png",
     "/gallery/obradovicslika3.png",
@@ -32,10 +32,17 @@ export default function FirmModal({ firm, onClose }: Props) {
   
 
   const images = useMemo(() => {
-  const key = (firm?.name ?? "").trim();
+  const key = norm(firm?.name ?? "");
   const local = FIRM_GALLERY[key] || [];
   return galleryUrls.length > 0 ? galleryUrls : local;
 }, [firm, galleryUrls]);
+
+const norm = (s: string) =>
+  (s || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "");
 
   // ESC zatvara modal
   useEffect(() => {
@@ -118,6 +125,7 @@ useEffect(() => {
       onMouseDown={onClose}
     >
       <div className="absolute inset-0 bg-black/60" />
+      
 
       <div
         className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200"
@@ -149,6 +157,8 @@ useEffect(() => {
         </a>
       )}
     </div>
+
+    
 
     {/* DESNO: rating + X zajedno */}
     <div className="shrink-0 flex items-center gap-3">
