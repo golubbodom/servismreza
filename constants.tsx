@@ -20,7 +20,7 @@ export const CATEGORIES: Category[] = [
   { id: '3', name: 'Moleri i Gipsari',query: 'moler', icon: <img src={painter} alt="Moleri/gipsari" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: 'Krečenje, gletovanje i dekorativne tehnike.'},
   { id: '4', name: "Keramičari", query: "Keramičari", icon: <img src={tiler} alt="Keramičari" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: "Postavljanje pločica, fugovanje, kupatila i kuhinje."},
   { id: '5', name: "Krovopokrivači", query: "Krovopokrivači", icon: <img src={krovopokrivac} alt="krovopokrivac" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: "Crep, lim, oluci, sanacije i popravke."},
-  { id: '6', name: 'PVC stolarija',query: 'pvc', icon: <img src={pvc} alt="pvc" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: 'Ugradnja, servis, dihtovanje, okovi, roletne.'},
+  { id: '6', name: 'PVC stolarija',query: 'pvc stolarija', icon: <img src={pvc} alt="pvc" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: 'Ugradnja, servis, dihtovanje, okovi, roletne.'},
   { id: '7', name: "Bravari", query: "Bravar", icon: <img src={bravar} alt="Bravar" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: "Otključavanje, brave, cilindri."},
   { id: '8', name: 'Servis Klima', query: 'klima servis', icon: <img src={aircondition} alt="Klima" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: 'Montaža, servis i dopuna freona.'},
   { id: '9', name: "Grejanje", query: "Grejanje", icon: <img src={grejanje} alt="grejanje" className="w-7 h-7 md:w-10 md:h-10 object-contain" />, description: "Radijatori, kotlovi, servisi, intervencije."},

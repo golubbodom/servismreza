@@ -520,6 +520,7 @@ const uploadPartnerPhotos = async (applicationId: string, photos: File[]) => {
          />
         <div className="reveal">
           <Categories
+              firms={firmsWithDistance}
               userId={session?.user?.id ?? null}
               followSet={followSet}
               onToggleFollow={toggleFollow}

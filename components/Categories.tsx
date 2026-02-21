@@ -4,17 +4,24 @@ import { CATEGORIES } from "../constants";
 import pinOutline from "../src/assets/icons/pin-outline.png";
 import pinFilled from "../src/assets/icons/pin-filled.png";
 
-
+import type { Firm } from "../src/types/firm";
 
 type Props = {
+  firms: Firm[];
   onSelectCategory?: (query: string) => void;
   userId?: string | null;
   followSet: Set<string>;
   onToggleFollow: (query: string) => void;
 };
 
-const Categories: React.FC<Props> = ({ onSelectCategory, userId, followSet, onToggleFollow }) =>  {
+const Categories: React.FC<Props> = ({ firms, onSelectCategory, userId, followSet, onToggleFollow }) =>  {
 const PAGE_SIZE = 6;
+const norm = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 const [page, setPage] = React.useState(0); // 0 = prva strana, 1 = druga
 const [isAnimating, setIsAnimating] = React.useState(false);
@@ -28,6 +35,24 @@ const pageItems = React.useMemo(() => {
   const start = page * PAGE_SIZE;
   return CATEGORIES.slice(start, start + PAGE_SIZE);
 }, [page]);
+const countByQuery = React.useMemo(() => {
+  const map: Record<string, number> = {};
+
+  for (const f of firms || []) {
+    const services = (f.services || []).map(norm);
+
+    for (const c of CATEGORIES) {
+      const q = norm(String(c.query || c.name || ""));
+      if (!q) continue;
+
+      if (services.includes(q)) {
+        map[q] = (map[q] || 0) + 1;
+      }
+    }
+  }
+
+  return map;
+}, [firms]);
 
 const goToPage = (nextPage: number, dir: "next" | "prev") => {
   if (isAnimating) return;
@@ -78,7 +103,17 @@ const goPrev = () => goToPage(page - 1, "prev");
         }}
         className="bg-white p-4 md:p-7 rounded-[28px] border border-slate-100 hover:border-brand-orange/20 md:hover:shadow-2xl md:hover:shadow-orange-900/55 md:hover:-translate-y-2 transition-all duration-300 group cursor-pointer relative"
       >
-        <div className="flex items-start justify-between mb-5">
+        {(() => {
+          const qKey = norm(String(cat.query || cat.name || ""));
+          const n = countByQuery[qKey] || 0;
+
+          return (
+            <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-100/70 px-2 py-1 text-[11px] font-black text-slate-500/70">
+              {n} {n === 1 ? "firma" : "firmi"}
+            </div>
+          );
+        })()}
+                <div className="flex items-start justify-between mb-5">
           <div className="text-xl md:text-2x1 w-11 h-11 md:w-14 md:h-14 bg-brand-accent-blue/20 flex items-center justify-center rounded-2xl group-hover:text-white transition-all duration-300">
             <span>{cat.icon}</span>
           </div>
