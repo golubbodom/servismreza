@@ -63,3 +63,36 @@ body::before {
   position: relative;
   z-index: 1;
 }
+
+.banner-marquee {
+  overflow: hidden;
+}
+
+.banner-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: sm-marquee 18s linear infinite;
+}
+
+.banner-segment {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@keyframes sm-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-track {
+    animation: none;
+  }
+}

@@ -15,7 +15,7 @@ import ChangePasswordModal from "./components/ChangePasswordModal";
 import FavoritesView from "./components/FavoritesView";
 import SavedCategoriesView from "./components/SavedCategoriesView";
 import { useCategoryFollows } from "./src/hooks/useCategoryFollows";
-
+import TopBanner from "./components/TopBanner";
 
 
 
@@ -351,6 +351,7 @@ const uploadPartnerPhotos = async (applicationId: string, photos: File[]) => {
   onOpenChangePassword={openChangePassword}
   onOpenSavedCategories={openSavedCategories}
   />
+  <TopBanner onClickCta={openPartner} />
       <main>
    
    <Hero
