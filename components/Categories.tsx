@@ -14,6 +14,14 @@ type Props = {
   onToggleFollow: (query: string) => void;
 };
 
+const CATEGORY_TERMS: Record<string, string[]> = {
+  pvc: ["pvc", "stolarija", "roletne", "okovi", "dihtovanje"],
+  moler: ["moler", "molersko", "gipsar", "gipsarski", "fasader", "fasada", "krecenje", "gletovanje"],
+  // po potrebi dodaješ za druge kategorije
+};
+
+
+
 const Categories: React.FC<Props> = ({ firms, onSelectCategory, userId, followSet, onToggleFollow }) =>  {
 const PAGE_SIZE = 6;
 const norm = (s: string) =>
@@ -35,24 +43,34 @@ const pageItems = React.useMemo(() => {
   const start = page * PAGE_SIZE;
   return CATEGORIES.slice(start, start + PAGE_SIZE);
 }, [page]);
+
+const CATEGORY_TERMS: Record<string, string[]> = {
+  pvc: ["pvc", "stolarija", "roletne", "okovi", "dihtovanje"],
+  moler: ["moler", "molersko", "gipsar", "gipsarski", "fasader", "fasada", "krecenje", "gletovanje"],
+  // dodaješ po potrebi
+};
+
 const countByQuery = React.useMemo(() => {
   const map: Record<string, number> = {};
 
   for (const f of firms || []) {
-    const services = (f.services || []).map(norm);
+    const services = (f.services || []).map((x) => norm(String(x)));
 
     for (const c of CATEGORIES) {
-      const q = norm(String(c.query || c.name || ""));
-      if (!q) continue;
+      const rawKey = String(c.query || c.name || "");
+      const key = norm(rawKey);
+      if (!key) continue;
 
-      if (services.includes(q)) {
-        map[q] = (map[q] || 0) + 1;
-      }
+      const terms = (CATEGORY_TERMS[key] ?? [key]).map(norm);
+
+      const hit = services.some((srv) => terms.some((t) => srv.includes(t)));
+      if (hit) map[key] = (map[key] || 0) + 1;
     }
   }
 
   return map;
 }, [firms]);
+
 
 const goToPage = (nextPage: number, dir: "next" | "prev") => {
   if (isAnimating) return;
@@ -119,6 +137,7 @@ const goPrev = () => goToPage(page - 1, "prev");
           </div>
 
      {userId && (
+      
   <button
     type="button"
     onClick={(e) => {
